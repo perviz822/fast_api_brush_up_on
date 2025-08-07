@@ -7,6 +7,7 @@ from  models import Users
 from typing import Annotated
 from database import SessionLocal
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter()
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -27,7 +28,16 @@ def get_db():
 
 
 db_dependency = Annotated[Session, Depends(get_db) ]
+
     
+def authenticate_user(username:str,password:str,db):
+    user=db.query(Users).filter(Users.username==username).first()
+    if not user:
+        return    
+    if  not bcrypt_context.verify(password,user.hashed_password):
+        return False
+    return True 
+
 
 
 @router.post("/auth",status_code=status.HTTP_201_CREATED)
@@ -36,6 +46,7 @@ async def create_user(
     createUserRequest:CreateUserRequest):
 
     create_user_model = Users(
+        username=createUserRequest.username,
         email =createUserRequest.email,
         first_name = createUserRequest.first_name,
         last_name = createUserRequest.last_name,
@@ -48,6 +59,16 @@ async def create_user(
     db.commit()
  
 
+@router.post("/token")
+async def  login_for_access_token(form_data:Annotated[OAuth2PasswordRequestForm,Depends()],
+                                  db:db_dependency):
+    
+
+    user = authenticate_user(form_data.username,form_data.password,db)
+
+    if not user:
+        return "Failed authentication"
+    
+    return 'Authentication succesfull'
 
 
-print(bcrypt_context.hash('aaasdasd'))

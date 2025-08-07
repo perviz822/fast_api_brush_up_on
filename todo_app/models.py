@@ -10,7 +10,7 @@ class Users(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean,default=True)
 
-    
+
 
 class Todos(Base):
     __tablename__='todos'
@@ -19,7 +19,7 @@ class Todos(Base):
     description = Column(String)
     priority = Column(Integer)
     complete = Column(Boolean,default=False)
-    owner_if =Column(Integer,ForeignKey("users.id"))
+    owner_id =Column(Integer,ForeignKey("users.id"))
 
 
 

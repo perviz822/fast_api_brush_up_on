@@ -67,9 +67,9 @@ async def update_todo(db:db_dependency,
      todo_model = db.query(Todos).filter(Todos.id ==todo_id).first()
      if todo_model is None:
           raise HTTPException(status_code=404,detail="todo not found")
-     todo_model.title = todo_request.title
-     todo_model.priority = todo_request.priority
-     todo_model.description = todo_request.description
-     todo_model.complete = todo_request.complete
+     todo_model.title = todo_request.title  # type: ignore
+     todo_model.priority = todo_request.priority  # type: ignore
+     todo_model.description = todo_request.description  # type: ignore
+     todo_model.complete = todo_request.complete  # type: ignore
      db.commit()
      db.refresh(todo_model)

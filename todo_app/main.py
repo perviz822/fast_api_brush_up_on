@@ -2,9 +2,7 @@
 from fastapi import FastAPI, Depends, status
 import models
 from database import engine
-
 from routers import auth,todos
-
 models.Base.metadata.create_all(bind=engine)
 
 

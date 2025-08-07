@@ -4,12 +4,11 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from  models import Users
+from typing import Annotated
+from database import SessionLocal
 from passlib.context import CryptContext
 router = APIRouter()
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-
-
-
 
 class CreateUserRequest(BaseModel):
     username:str
@@ -18,10 +17,24 @@ class CreateUserRequest(BaseModel):
     last_name:str
     password:str
 
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()    
+
+
+db_dependency = Annotated[Session, Depends(get_db) ]
     
 
-@router.post("/auth")
-async def create_user(createUserRequest:CreateUserRequest):
+
+@router.post("/auth",status_code=status.HTTP_201_CREATED)
+async def create_user(
+    db:db_dependency,
+    createUserRequest:CreateUserRequest):
+
     create_user_model = Users(
         email =createUserRequest.email,
         first_name = createUserRequest.first_name,
@@ -30,10 +43,10 @@ async def create_user(createUserRequest:CreateUserRequest):
         hashed_password = bcrypt_context.hash(createUserRequest.password)
 
     )
-    return{
-        "user": create_user_model.hashed_password
-    }
 
+    db.add(create_user_model)
+    db.commit()
+ 
 
 
 
